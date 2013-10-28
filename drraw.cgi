@@ -73,7 +73,7 @@ use vars qw ( $title $header $footer
               $saved_dir $clean_cache $tmp_dir $ERRLOG %users
               %Index $IndexMax $icon_new $icon_closed $icon_open $icon_text
               $icon_help $icon_bug $icon_link
-              %colors
+              %colors $user
               $CSS $CSS2 $bgColor );
 
 # Default title
@@ -129,7 +129,7 @@ $use_rcs = 0;
 $clean_cache = 21600;
 
 # Users
-%users = ( 'guest' => 2 );
+%users = ( 'guest' => 0 );
 
 my $IndexMax = 0;
 # Icons used in the browser
@@ -691,7 +691,8 @@ if ( defined($users{$user}) ) {
     $level = $users{$user};
 } else {
     # Authenticated user defaults level 2 access
-    $level = 2;
+    # RPA 11/3/2011 change this to default to level 1 access so you can't delete others stuff
+    $level = 1;
     # But let's bomb out if stupidity seems to be involved!
     die "SECURITY ALERT: 'guest' user entry is missing from %users configuration!\n" if ( $user eq 'guest' );
 }
@@ -1101,7 +1102,7 @@ if ( scalar(@pnames) == 0 || defined(param('Browse')) ) {
                         next if ( defined(param("${item}_DELETE")) );
                         if ( param("${item}_dname") =~ /^g/ ) {
                             print
-                                td(a({-href=>MakeURL('Mode', 'view',
+                                td(a({-target=>$item, -href=>MakeURL('Mode', 'view',
                                                      'Graph', substr(param("${item}_dname"), 1))},
                                      &GraphHTML(param("${item}_dname"), undef,
                                                 param('Start'), param('End'),
@@ -1153,7 +1154,7 @@ if ( scalar(@pnames) == 0 || defined(param('Browse')) ) {
 
                             while ( scalar(@list) > 0 ) {
                                 print
-                                    td(a({-href=>MakeURL('Mode', 'view',
+                                    td(a({-target=>$item, -href=>MakeURL('Mode', 'view',
                                                          'Template', $titem,
                                                          'Base', $list[0])},
                                          &GraphHTML(param("${item}_dname"),
