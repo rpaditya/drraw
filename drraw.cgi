@@ -3592,7 +3592,20 @@ sub DRAW
                                           param("${ds}_RRA"), '%lf') );
 
                         my ($graphret, $xs, $ys) = RRDs::graph(( $Config{'osname'} eq 'MSWin32' ) ? 'NUL:' : '/dev/null', "--start", $startts, "--end", $endts, @dsxz);
-                        next if ( ${$graphret}[0] eq "nan" );
+
+# we don't want to hide just the first RRD if it is zero, but all that are zero
+# RPA
+                        if (! defined(param('ShowBlank'))){
+                            my $any = 0;
+                            foreach ( @{$graphret} ) {
+                                next unless ( $_ ne "nan" && ($_ > 0 || $_ <0));
+                                $any = 1;
+                                last;
+                            }
+                            next unless ( $any == 1 );
+                        } else {
+                            next if ( ${$graphret}[0] eq "nan" );
+                        }
 
                         # Looks good, use it
                         push @DEF, join(':', 'DEF',
@@ -3668,7 +3681,7 @@ sub DRAW
                         if(@dselements) {
                             $dsdef  = "$first,";
                             $dsdef .= join(",". param("${ds}_Formula") .",",
-                                          @dselements);
+                                           @dselements);
                             $dsdef .= ",". param("${ds}_Formula")
                         } else {
                             $dsdef = "$first"
